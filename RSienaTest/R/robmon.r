@@ -83,7 +83,7 @@ robmon <- function(z, x, useCluster, nbrNodes, initC, clusterString,
         }
 		if (!length(cl)) {
 			unlink("cluster.out")
-			if (clusterType == "FORK")
+			if (clusterType == "FORK" | clusterType == "MPI")
 			{
 				cl <- makeCluster(nbrNodes, type = clusterType,
 					outfile = "cluster.out")

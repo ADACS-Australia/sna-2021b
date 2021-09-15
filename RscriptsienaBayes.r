@@ -102,7 +102,7 @@ print(GroupEffects, includeRandoms=TRUE, dropRates=TRUE)
 ################################################################################
 ans <- siena07(GroupsAlgo, data = TwentyOne_Groups,
 				effects = GroupEffects,
-                useCluster=TRUE, nbrNodes=8)
+                useCluster=TRUE, nbrNodes=8, clusterType = "MPI")
 ans
 # nn has very precisely a parameter estimate of -0.5!
 tt.ans <- sienaTimeTest(ans)
@@ -180,7 +180,7 @@ groupModel.e <- sienaBayes(GroupsAlgo, data = TwentyOne_Groups,
 				priorKappa = 0.01,
 				prevAns = ans,
 				nwarm=200, nmain=1000, nrunMHBatches=40,
-                nbrNodes=7, silentstart=FALSE)
+                nbrNodes=7, clusterType = "MPI", silentstart=FALSE)
 save(groupModel.e, file="groupModele_01.RData")
 
 # If we find this was not long enough, we can prolong:
@@ -190,7 +190,7 @@ groupModel.ec <- sienaBayes(GroupsAlgo, data = TwentyOne_Groups,
 				priorKappa = 0.01,
 				prevBayes = groupModel.e,
 				nmain=2000, nrunMHBatches=40,
-                nbrNodes=7, silentstart=FALSE)
+                nbrNodes=7, clusterType = "MPI", silentstart=FALSE)
 save(groupModel.ec, file="groupModelee_01.RData")
 
 # combine it with the earlier chain:
