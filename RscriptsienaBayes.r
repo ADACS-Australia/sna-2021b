@@ -40,7 +40,7 @@ TwentyOne_Groups
 class(TwentyOne_Groups)
 length(TwentyOne_Groups)
 # This is a sienaGroup object, created by
-?sienaGroupCreate
+# ?sienaGroupCreate
 # The first of the 21:
 TwentyOne_Groups[[1]]
 
@@ -143,7 +143,7 @@ print(GroupEffects, includeRandoms=TRUE, dropRates=TRUE)
 ################################################################################
 
 # Now we are going to apply
- ?sienaBayes
+#  ?sienaBayes
 # Prior dimensions should be 11, as shown by the print(GroupEffects, ...
 # For the rates we have to give values, but they do not matter
 # if we use the default priorRatesFromData=2
@@ -213,7 +213,7 @@ summary(eee)
 (pmean <- extract.posteriorMeans(eee))
 # See
 #
-?extract.posteriorMeans
+# ?extract.posteriorMeans
 # for further options, in particular, to get posterior standard deviations.
 
 # Make a multidimensional scaling plot of the posterior means
@@ -260,8 +260,8 @@ GlobalNonRateParameterPlots(eee, setOfEffects = 16:19, title="edel")
 # For the numbering, you can also use this non-exported function in RSienaTest:
 RSienaTest:::getNames(groupModel.e)
 
-# For some of the parameters, such as the estimates for nn 
-# (see enet_others_postEta), delinquency ego  
+# For some of the parameters, such as the estimates for nn
+# (see enet_others_postEta), delinquency ego
 # (see enet_del_postMu and enet_del_postSD) and for the rate parameters
 # (see eee_postMuRate and eee_postSDRate), seem to converge rather late;
 # they are more stable after about run 1300.
@@ -281,7 +281,7 @@ print(groupModel.e, nfirst=500)
 (sbr.c <- shortBayesResults(groupModel.e, nfirst=500))
 # which produces a data frame, not viewed so nicely,
 # but which may be useful for further use. See
-?shortBayesResults
+# ?shortBayesResults
 
 ################################################################################
 ### Continuing estimation
@@ -303,9 +303,9 @@ print(groupModel.e, nfirst=500)
 # within the for-loop, different for each i.
 
 # When you follow this whole sequence of model fits,
-# it is good to know already now that the following 5 runs turn out 
-# to be less good than the 5 runs after that; 
-# therefore, these may be skipped. 
+# it is good to know already now that the following 5 runs turn out
+# to be less good than the 5 runs after that;
+# therefore, these may be skipped.
 # They are mentioned here just for comparison purposes.
 
 for (i in 2:5)
@@ -363,7 +363,7 @@ for (i in 1:5)
 # The package is called after Stanislav Ulam. Wikiquotes has nice quotes from him.
 # If necessary: install.packages("rstan")
 library(rstan)
-?monitor
+# ?monitor
 
 # Since the objects were overwritten and saved, we have to load them again.
 
@@ -451,20 +451,20 @@ summary(grc)
 ### Assessing convergence for the earlier five parallel runs
 ################################################################################
 
-# For the earlier five parallel runs, stored in 
+# For the earlier five parallel runs, stored in
 # "groupModele_01.RData" to "groupModele_05.RData", convergence is less good.
 
 
 ################################################################################
-### How different are the results of  
+### How different are the results of
 ### the combination of groupModel.e and groupModel.ec
 ### from the results of  the combination of groupModel.ecx?
 ################################################################################
 
-# For this, we can use the function 
-?shortBayesResults
-s.grc <- shortBayesResults(grc) 
-s.eee <- shortBayesResults(eee) 
+# For this, we can use the function
+# ?shortBayesResults
+s.grc <- shortBayesResults(grc)
+s.eee <- shortBayesResults(eee)
 # This produces two data frames, the columns are
 names(s.grc)
 # We take out only the end points of the credibility intervals
@@ -498,8 +498,7 @@ graphics.off()
 # Look at this file and interpret what it means for this data set.
 # Note that the effects of the delinquency effects on friendship
 # are not 'significant'. Their joint effect can be tested by
-? multipleBayesTest
+# ? multipleBayesTest
 multipleBayesTest(grc, 9:11)
 plot(multipleBayesTest(grc, 9:11))
 # and also is not 'significant'.
-
