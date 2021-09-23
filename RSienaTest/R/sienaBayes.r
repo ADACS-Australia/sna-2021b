@@ -1188,7 +1188,10 @@ covtrob <- function(x){
 		{
 			## require(parallel)
 			clusterType <- match.arg(clusterType)
-			if (clusterType == "PSOCK")
+			if (clusterType == "MPI") {
+				z$cl <- makeCluster(type = "MPI", outfile = "cluster.out")
+			}
+			else if (clusterType == "PSOCK")
 			{
 				clusterString <- rep("localhost", nbrNodes)
 				z$cl <- makeCluster(clusterString, type = "PSOCK",
@@ -3042,4 +3045,3 @@ antitrafo <- function(x){x}
 ##@devtrafo derivative link function rates
 #devtrafo <- function(x){ifelse(x<0.01, 0.05, 1/(2*sqrt(x)))}
 devtrafo <- function(x){1}
-
