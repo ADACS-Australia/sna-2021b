@@ -31,7 +31,7 @@ sienaBayes <- function(data, effects, algo, saveFreq=100,
 				storeAll = FALSE, prevAns=NULL, usePrevOnly=TRUE,
 				prevBayes = NULL, newProposalFromPrev=(prevBayes$nwarm >= 1),
 				silentstart=TRUE,
-				nbrNodes=1, clusterType=c("PSOCK", "FORK"),
+				nbrNodes=1, clusterType=c("PSOCK", "FORK", "MPI"),
 				getDocumentation=FALSE)
 {
 	##@createStores internal sienaBayes Bayesian set up stores
@@ -1188,7 +1188,10 @@ covtrob <- function(x){
 		{
 			## require(parallel)
 			clusterType <- match.arg(clusterType)
-			if (clusterType == "PSOCK")
+			if (clusterType == "MPI") {
+				z$cl <- makeCluster(type = "MPI", outfile = "cluster.out")
+			}
+			else if (clusterType == "PSOCK")
 			{
 				clusterString <- rep("localhost", nbrNodes)
 				z$cl <- makeCluster(clusterString, type = "PSOCK",
@@ -3042,4 +3045,3 @@ antitrafo <- function(x){x}
 ##@devtrafo derivative link function rates
 #devtrafo <- function(x){ifelse(x<0.01, 0.05, 1/(2*sqrt(x)))}
 devtrafo <- function(x){1}
-
