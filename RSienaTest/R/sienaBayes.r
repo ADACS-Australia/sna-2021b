@@ -33,6 +33,11 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
                        silentstart = TRUE,
                        nbrNodes = 1, clusterType = c("PSOCK", "FORK", "MPI"),
                        getDocumentation = FALSE) {
+
+  if (clusterType == "MPI") {
+    nbrNodes <- max(Rmpi::mpi.comm.size(0) - 1, 1)
+  }
+
   ## @createStores internal sienaBayes Bayesian set up stores
   createStores <- function() {
     # npar <- length(z$theta)
@@ -1476,7 +1481,7 @@ initializeBayes <- function(data, effects, algo, nbrNodes,
                             nmain, nprewarm, nwarm,
                             lengthPhase1, lengthPhase3,
                             prevAns, usePrevOnly,
-                            silentstart, clusterType = c("PSOCK", "FORK")) {
+                            silentstart, clusterType = c("PSOCK", "FORK", "MPI")) {
   ## @precision internal initializeBayes invert z$covtheta
   ## avoiding some inversion problems
   ## for MoM estimates only
@@ -2407,7 +2412,12 @@ initializeBayes <- function(data, effects, algo, nbrNodes,
   if (nbrNodes > 1 && z$observations > 1) {
     ## require(parallel)
     clusterType <- match.arg(clusterType)
-    if (clusterType == "PSOCK") {
+    if (clusterType == "MPI") {
+      z$cl <- makeCluster(
+        type = "MPI",
+        outfile = "cluster.out"
+      )
+    } else if (clusterType == "PSOCK") {
       clusterString <- rep("localhost", nbrNodes)
       z$cl <- makeCluster(clusterString,
         type = "PSOCK",
