@@ -10,5 +10,6 @@ groupModel.ec <- sienaBayes(GroupsModel,
   priorKappa = 0.01,
   prevBayes = groupModel.e,
   nmain = 20, nrunMHBatches = 40,
-  nbrNodes = 1, silentstart = FALSE
+  silentstart = FALSE,
+  clusterType = 'MPI'
 )
