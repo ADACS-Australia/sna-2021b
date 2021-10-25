@@ -105,9 +105,9 @@ ans <- siena07(GroupsAlgo, data = TwentyOne_Groups,
                 useCluster=TRUE, clusterType = "MPI")
 ans
 # nn has very precisely a parameter estimate of -0.5!
-tt.ans <- sienaTimeTest(ans)
+# tt.ans <- sienaTimeTest(ans)
 # The warning does not matter.
-summary(tt.ans)
+# summary(tt.ans)
 # We look at the effect-wise joint significance tests
 # for the between-group variabilty of effects.
 # The quickest summary is by mentioning the non-significant

@@ -38,6 +38,10 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	}
 	on.exit(exitfn())
 
+	if (clusterType == "MPI") {
+		nbrNodes <- max(Rmpi::mpi.comm.size(0) - 1, 1)
+	}
+
 	# If the user is passing clusters through -cl- then change the
 	# useCluster to TRUE, and assign the -nbrNodes- to number of nodes
 	if (!useCluster & length(cl))
@@ -147,7 +151,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 		if (!requireNamespace("tcltk", quietly = TRUE))
 		{
 				batchUse <- TRUE
-				message("Package tcltk not available, forcing use of batch mode")		
+				message("Package tcltk not available, forcing use of batch mode")
 		}
 		else
 		{

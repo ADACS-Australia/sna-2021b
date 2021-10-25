@@ -1,0 +1,10 @@
+Makevars
+*.o
+*.log
+*Groups.txt
+*project*.txt
+config.status
+cluster.out
+*.so
+*.RData
+startup_sienaBayes.txt
