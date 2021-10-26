@@ -9,5 +9,4 @@ groupModel.ec <- sienaBayes(GroupsModel, data = my.Karen,
                             priorKappa = 0.01,
                             prevBayes = groupModel.e,
                             nmain=20, nrunMHBatches=40,
-                            nbrNodes=1, silentstart=FALSE)
-
+                            nbrNodes=1, silentstart=FALSE, clusterType="MPI")
