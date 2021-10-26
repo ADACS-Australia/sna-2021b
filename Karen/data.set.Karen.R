@@ -122,7 +122,7 @@ groupModel.e <- sienaBayes(GroupsModel, data = my.Karen,
                            effects = GroupEffects, priorMu = Mu, priorSigma = Sig,
                            priorKappa = 0.01,
                            nwarm=nwarm, nmain=nmain, nrunMHBatches=40,
-                           nbrNodes=nbrNodes, silentstart=FALSE)
+                           nbrNodes=nbrNodes, clusterType='FORK', silentstart=FALSE)
 
 save(list=ls(),file='Karen.RData')
 }
