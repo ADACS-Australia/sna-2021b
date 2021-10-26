@@ -16,16 +16,16 @@ net1[ none.tie.list[1,1], none.tie.list[1,2]] <- 1
 
 behave.DV <- round(matrix( runif(n*2)*5,n,2))
 
-mynet1 <- sienaDependent(array(c(net1, net2), dim=c(n,n,2) ),allowOnly = FALSE)# 
+mynet1 <- sienaDependent(array(c(net1, net2), dim=c(n,n,2) ),allowOnly = FALSE)#
 mybeh <- sienaDependent( behave.DV, type = "behavior" ,allowOnly = FALSE)# w
 mydata <- sienaDataCreate(mynet1,mybeh)
 myeffects <- getEffects( mydata )
-myeffects <- setEffect( myeffects, name = "mynet1",density,initialValue = -1.4163)# 
+myeffects <- setEffect( myeffects, name = "mynet1",density,initialValue = -1.4163)#
 myeffects <- setEffect( myeffects,recip,initialValue = 1.1383 )# set
 myeffects <- includeEffects( myeffects, transTrip, transRecTrip )
-myeffects <- setEffect( myeffects, egoX, 
+myeffects <- setEffect( myeffects, egoX,
                         interaction1 = "mybeh" ,initialValue = -.5 )# social selection effects
-myeffects <- setEffect( myeffects,  altX, 
+myeffects <- setEffect( myeffects,  altX,
                         interaction1 = "mybeh" ,initialValue = .25 )# social selection effects
 myeffects <- setEffect( myeffects, egoXaltX,
                         interaction1 = "mybeh",initialValue = .5 )# social selection homophilye
@@ -36,13 +36,12 @@ myeffects <- setEffect(myeffects, name = "mynet1", Rate, type="rate",
 myeffects <- setEffect(myeffects, name = "mybeh", Rate, type="rate",
                        initialValue = 3)
 
-sim_model  <-  sienaAlgorithmCreate( 
+sim_model  <-  sienaAlgorithmCreate(
   projname = 'sim_model',
-  cond = FALSE, 
+  cond = FALSE,
   useStdInits = FALSE, nsub = 0 ,
   n3 = M,# run M simulations
-  simOnly = TRUE)   # by 
-
+  simOnly = TRUE)   # by
 
 sim_ans <- siena07( sim_model,#simulation settings
                     data = mydata,# our starting data
@@ -56,15 +55,15 @@ simbeh <- matrix(NA,n,M)
 
 
 for (i in c(1:M)){
-  
-  emptyNetwork <- network::network.initialize(n, 
+
+  emptyNetwork <- network::network.initialize(n,
                                               bipartite = NULL)
-  matrixNetwork <- sparseMatrixExtraction(i, sim_ans$f, sim_ans$sims, 
+  matrixNetwork <- sparseMatrixExtraction(i, sim_ans$f, sim_ans$sims,
                                           1, 'Data1', "mynet1")
   sparseMatrixNetwork <- as(matrixNetwork, "dgTMatrix")
-  simnets[[i]] <- network::network.edgelist(cbind(sparseMatrixNetwork@i + 
+  simnets[[i]] <- network::network.edgelist(cbind(sparseMatrixNetwork@i +
                                                     1, sparseMatrixNetwork@j +1, 1), emptyNetwork)
-  
+
   simbeh[,i] <- sim_ans$sims[[i]][[1]][[2]][[1]]
 }
 
