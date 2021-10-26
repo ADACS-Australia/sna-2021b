@@ -9,3 +9,6 @@
 ml r/4.1.1
 
 srun ../mpi-Rscript call.Karen.R
+
+# Clean up
+rm *.txt *.log
