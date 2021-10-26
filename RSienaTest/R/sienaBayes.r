@@ -34,8 +34,17 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
                        nbrNodes = 1, clusterType = c("PSOCK", "FORK", "MPI"),
                        getDocumentation = FALSE) {
 
-  if (clusterType == "MPI") {
-    nbrNodes <- max(Rmpi::mpi.comm.size(0) - 1, 1)
+  useCluster <- FALSE
+  if (!is.null(nbrNodes)) {
+    if (nbrNodes > 1) {
+      useCluster <- TRUE
+    }
+  }
+
+  if (useCluster) {
+    if (clusterType == "MPI") {
+      nbrNodes <- max(Rmpi::mpi.comm.size(0) - 1, 1)
+    }
   }
 
   ## @createStores internal sienaBayes Bayesian set up stores
@@ -873,7 +882,7 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
       delta = delta, nmain = nmain, nprewarm = nprewarm, nwarm = nwarm,
       lengthPhase1 = lengthPhase1, lengthPhase3 = lengthPhase3,
       prevAns = prevAns, usePrevOnly = usePrevOnly,
-      silentstart = silentstart, clusterType = clusterType
+      silentstart = silentstart, useCluster = useCluster, clusterType = clusterType
     )
     cat("Initial global model estimates\n")
     print(z$initialResults)
@@ -1481,7 +1490,7 @@ initializeBayes <- function(data, effects, algo, nbrNodes,
                             nmain, nprewarm, nwarm,
                             lengthPhase1, lengthPhase3,
                             prevAns, usePrevOnly,
-                            silentstart, clusterType = c("PSOCK", "FORK", "MPI")) {
+                            silentstart, useCluster, clusterType = c("PSOCK", "FORK", "MPI")) {
   ## @precision internal initializeBayes invert z$covtheta
   ## avoiding some inversion problems
   ## for MoM estimates only
@@ -1737,7 +1746,7 @@ initializeBayes <- function(data, effects, algo, nbrNodes,
     startupGlobal <- siena07(startupModel,
       data = data, effects = effects,
       batch = TRUE, silent = silentstart,
-      useCluster = (nbrNodes >= 2), nbrNodes = nbrNodes,
+      useCluster = useCluster, nbrNodes = nbrNodes,
       clusterType = clusterType
     )
   } else {
@@ -1752,7 +1761,7 @@ initializeBayes <- function(data, effects, algo, nbrNodes,
       startupGlobal <- siena07(startupModel,
         data = data, effects = effects,
         batch = TRUE, silent = silentstart,
-        useCluster = (nbrNodes >= 2), nbrNodes = nbrNodes,
+        useCluster = useCluster, nbrNodes = nbrNodes,
         clusterType = clusterType, prevAns = prevAns
       )
     }

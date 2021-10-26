@@ -37,9 +37,10 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 		RNGkind("default")
 	}
 	on.exit(exitfn())
-
-	if (clusterType == "MPI") {
-		nbrNodes <- max(Rmpi::mpi.comm.size(0) - 1, 1)
+	if (useCluster) {
+		if (clusterType == "MPI") {
+			nbrNodes <- max(Rmpi::mpi.comm.size(0) - 1, 1)
+		}
 	}
 
 	# If the user is passing clusters through -cl- then change the
