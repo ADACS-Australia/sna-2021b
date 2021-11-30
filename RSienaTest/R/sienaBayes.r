@@ -1174,6 +1174,11 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
           type = "PSOCK",
           outfile = "cluster.out"
         )
+      } else if (clusterType == "MPI") {
+        z$cl <- snow::makeCluster(
+          type = clusterType,
+          outfile = "cluster.out"
+        )
       } else {
         z$cl <- snow::makeCluster(nbrNodes,
           type = clusterType,
@@ -2422,6 +2427,11 @@ initializeBayes <- function(data, effects, algo, nbrNodes,
       clusterString <- rep("localhost", nbrNodes)
       z$cl <- makeCluster(clusterString,
         type = "PSOCK",
+        outfile = "cluster.out"
+      )
+    } else if (clusterType == "MPI") {
+      z$cl <- snow::makeCluster(
+        type = clusterType,
         outfile = "cluster.out"
       )
     } else {
