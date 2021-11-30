@@ -1,5 +1,5 @@
 #### === functions for creating a set of dummy multilevel SAOM objects =====
-data.set.karen.set.up <- function(n,M,seed=123,nbrNodes=NULL,nmain=NULL,nwarm=NULL,nprewarm=NULL){
+data.set.karen.set.up <- function(n,M,seed=123,nbrNodes=NULL,nmain=NULL,nwarm=NULL,nprewarm=NULL,clusterType="FORK"){
 require(RSienaTest)
 require(sna)
 average.degree <- 3
@@ -122,7 +122,7 @@ groupModel.e <- sienaBayes(GroupsModel, data = my.Karen,
                            effects = GroupEffects, priorMu = Mu, priorSigma = Sig,
                            priorKappa = 0.01,
                            nprewarm=nprewarm, nwarm=nwarm, nmain=nmain, nrunMHBatches=40,
-                           nbrNodes=nbrNodes, clusterType='FORK', silentstart=FALSE)
+                           nbrNodes=nbrNodes, clusterType=clusterType, silentstart=FALSE)
 
 save(list=ls(),file='Karen.RData')
 }
