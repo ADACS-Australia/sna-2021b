@@ -1,7 +1,7 @@
 ## ==== how to call Karen
 ### === the function create.enzo creates data and an initial estimation
 source('data.set.Karen.R')
-data.set.karen.set.up(n=20,M=32,seed=123,nbrNodes=8,nmain=10,nwarm=0,nprewarm=0)
+data.set.karen.set.up(n=10,M=4,seed=123,nbrNodes=8,nmain=10,nwarm=0,nprewarm=0)
 ### === arguments
 # 1. set nbrNodes to the minimum of your number of cores and 6
 # 2. set nmain to something in the range 20 to 100
