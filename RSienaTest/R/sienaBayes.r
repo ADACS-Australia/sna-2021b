@@ -31,7 +31,7 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
                        storeAll = FALSE, prevAns = NULL, usePrevOnly = TRUE,
                        prevBayes = NULL, newProposalFromPrev = (prevBayes$nwarm >= 1),
                        silentstart = TRUE,
-                       nbrNodes = 1, clusterType = c("PSOCK", "FORK", "MPI"),
+                       nbrNodes = 1, clusterType = c("PSOCK", "SOCK", "FORK", "MPI"),
                        getDocumentation = FALSE) {
 
   useCluster <- FALSE
@@ -1167,19 +1167,16 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
     z$thetaMat <- prevThetaMat
 
     if (nbrNodes > 1 && z$observations > 1) {
-      ## require(parallel)
-      clusterType <- match.arg(clusterType)
-      if (clusterType == "MPI") {
-        z$cl <- makeCluster(type = "MPI", outfile = "cluster.out")
-      } else if (clusterType == "PSOCK") {
+      if (clusterType == "PSOCK") {
         clusterString <- rep("localhost", nbrNodes)
-        z$cl <- makeCluster(clusterString,
+        z$cl <- makeCluster(
+          clusterString,
           type = "PSOCK",
           outfile = "cluster.out"
         )
       } else {
-        z$cl <- makeCluster(nbrNodes,
-          type = "FORK",
+        z$cl <- snow::makeCluster(nbrNodes,
+          type = clusterType,
           outfile = "cluster.out"
         )
       }
@@ -1490,7 +1487,7 @@ initializeBayes <- function(data, effects, algo, nbrNodes,
                             nmain, nprewarm, nwarm,
                             lengthPhase1, lengthPhase3,
                             prevAns, usePrevOnly,
-                            silentstart, useCluster, clusterType = c("PSOCK", "FORK", "MPI")) {
+                            silentstart, useCluster, clusterType = c("PSOCK", "SOCK", "FORK", "MPI")) {
   ## @precision internal initializeBayes invert z$covtheta
   ## avoiding some inversion problems
   ## for MoM estimates only
@@ -2421,20 +2418,15 @@ initializeBayes <- function(data, effects, algo, nbrNodes,
   if (nbrNodes > 1 && z$observations > 1) {
     ## require(parallel)
     clusterType <- match.arg(clusterType)
-    if (clusterType == "MPI") {
-      z$cl <- makeCluster(
-        type = "MPI",
-        outfile = "cluster.out"
-      )
-    } else if (clusterType == "PSOCK") {
+    if (clusterType == "PSOCK") {
       clusterString <- rep("localhost", nbrNodes)
       z$cl <- makeCluster(clusterString,
         type = "PSOCK",
         outfile = "cluster.out"
       )
     } else {
-      z$cl <- makeCluster(nbrNodes,
-        type = "FORK",
+      z$cl <- snow::makeCluster(nbrNodes,
+        type = clusterType,
         outfile = "cluster.out"
       )
     }
@@ -2669,17 +2661,27 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
     anss <- list(ans)
   } else {
     if (z$int2 == 1) {
+
       anss <- apply(
         callGrid, 1,
         doGetProbabilitiesFromC, z$thetaMat, index, getScores
       )
     } else {
+
       use <- 1:(min(nrow(callGrid), z$int2))
-      anss <- parRapply(
-        z$cl[use], callGrid,
-        doGetProbabilitiesFromC, z$thetaMat, index,
-        getScores
+
+      require(snow)
+      tm = snow.time(
+        anss <- snow::parRapply(
+          z$cl[use], callGrid,
+          doGetProbabilitiesFromC, z$thetaMat, index,
+          getScores
+        )
       )
+      print(tm)
+      plot(tm)
+
+      stop()
     }
   }
   ans <- list()
