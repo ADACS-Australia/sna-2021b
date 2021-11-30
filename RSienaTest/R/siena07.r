@@ -17,7 +17,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	initC=TRUE,
 	clusterString=rep("localhost", nbrNodes), tt=NULL,
 	parallelTesting=FALSE, clusterIter=!x$maxlike,
-	clusterType=c("PSOCK", "FORK", "MPI"),
+	clusterType=c("PSOCK", "SOCK", "FORK", "MPI"),
 	logLevelConsole='WARNING', logLevelFile='INFO',
 	logIncludeLocation=F, cl=NULL,...)
 {
