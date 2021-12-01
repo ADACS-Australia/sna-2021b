@@ -359,7 +359,7 @@ robmon <- function(z, x, useCluster, nbrNodes, initC, clusterString,
 		{
 			if (useCluster)
 			{
-				stopCluster(cl)
+				# stopCluster(cl)
 			}
 			useCluster <- FALSE
             return(z)
@@ -399,7 +399,7 @@ robmon <- function(z, x, useCluster, nbrNodes, initC, clusterString,
     z$termination <- 'OK'
     if (useCluster)
     {
-		stopCluster(cl)
+		# stopCluster(cl)
 	}
     z
 }
