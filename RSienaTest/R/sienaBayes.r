@@ -1185,7 +1185,11 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
           outfile = "cluster.out"
         )
       }
-      clusterCall(z$cl, library, pkgname, character.only = TRUE)
+      # tm = snow.time(
+        clusterCall(z$cl, library, pkgname, character.only = TRUE)
+      # )
+      # print(tm)
+      # plot(tm)
       clusterCall(z$cl, storeinFRANstore, FRANstore())
       clusterCall(z$cl, FRANstore)
       clusterCall(z$cl, initializeFRAN, z, algo,
@@ -1194,6 +1198,7 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
       clusterSetRNGStream(z$cl, iseed = as.integer(runif(1,
         max = .Machine$integer.max
       )))
+
     }
 
     # Note: all parameter values are taken from prevBayes,
@@ -2680,17 +2685,16 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
 
       use <- 1:(min(nrow(callGrid), z$int2))
 
-      require(snow)
       tm = snow.time(
-        anss <- snow::parRapply(
-          z$cl[use], callGrid,
-          doGetProbabilitiesFromC, z$thetaMat, index,
-          getScores
-        )
+      anss <- snow::parRapply(
+        z$cl[use], callGrid,
+        doGetProbabilitiesFromC, z$thetaMat, index,
+        getScores
       )
+      )
+
       print(tm)
       plot(tm)
-
       stop()
     }
   }
