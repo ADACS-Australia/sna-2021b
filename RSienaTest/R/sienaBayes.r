@@ -2685,17 +2685,12 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
 
       use <- 1:(min(nrow(callGrid), z$int2))
 
-      tm = snow.time(
       anss <- snow::parRapply(
         z$cl[use], callGrid,
         doGetProbabilitiesFromC, z$thetaMat, index,
         getScores
       )
-      )
 
-      print(tm)
-      plot(tm)
-      stop()
     }
   }
   ans <- list()
