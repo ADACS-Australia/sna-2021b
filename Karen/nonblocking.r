@@ -19,3 +19,14 @@ staticClusterApply <- function(cl, fun, n, argfun) {
         checkForRemoteErrors(val)
     }
 }
+
+recvResult <- function (con)  {
+  if (.snowTimingData$running()) {
+      start <- proc.time()[3]
+      r <- recvData(con)
+      end <- proc.time()[3]
+      .snowTimingData$enterRecv(con$rank, start, end, r$time[3])
+  }
+  else r <- recvData(con)
+  r$value
+}
