@@ -14,9 +14,8 @@ staticClusterApply <- function(cl, fun, n, argfun) {
             jobs <- end - start + 1
             for (i in 1:jobs)
                 sendCall(cl[[i]], fun, argfun(start + i - 1))
-                # val[i] <- snow::recvResult(cl[1:jobs])
-            for (i in 1:jobs)
                 val[i] <- lapply(cl[i], recvResult)
+
             start <- start + jobs
         }
         checkForRemoteErrors(val)
