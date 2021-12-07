@@ -34,18 +34,13 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
                        nbrNodes = 1, clusterType = c("PSOCK", "SOCK", "FORK", "MPI"),
                        getDocumentation = FALSE) {
 
-  useCluster <- FALSE
-  if (!is.null(nbrNodes)) {
-    if (nbrNodes > 1) {
-      useCluster <- TRUE
-    }
+  if (clusterType == "MPI") {
+    nbrNodes <- max(Rmpi::mpi.comm.size(0) - 1, 1)
+  } else if (is.null(nbrNodes)) {
+    nbrNodes <- 1
   }
 
-  if (useCluster) {
-    if (clusterType == "MPI") {
-      nbrNodes <- max(Rmpi::mpi.comm.size(0) - 1, 1)
-    }
-  }
+  useCluster <- nbrNodes > 1
 
   ## @createStores internal sienaBayes Bayesian set up stores
   createStores <- function() {
