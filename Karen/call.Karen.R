@@ -1,7 +1,7 @@
 ### === runing estimation
 library(RSienaTest)
 # load data and initial estimation
-load('Karen.RData')
+load('setups/Karen.RData.n10.m4')
 # run sienaBayes for timing and end-to-end purposes
 # set nmain to suit your timing needs but probably not less than 10
 library(snow)
