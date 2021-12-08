@@ -5,6 +5,9 @@ load('setups/Karen.RData.n10.m4')
 # run sienaBayes for timing and end-to-end purposes
 # set nmain to suit your timing needs but probably not less than 10
 library(snow)
+
+insertSource("nonblocking.r", package="snow")
+
 groupModel.ec <- sienaBayes(GroupsModel, data = my.Karen,
                             effects = GroupEffects, priorMu = Mu, priorSigma = Sig,
                             priorKappa = 0.01,
