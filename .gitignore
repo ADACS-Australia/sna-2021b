@@ -6,5 +6,4 @@ Makevars
 config.status
 cluster.out
 *.so
-*.RData
 startup_sienaBayes.txt
