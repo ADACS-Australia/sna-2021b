@@ -2681,14 +2681,15 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
       use <- 1:(min(nrow(callGrid), z$int2))
 
       # Send doGetProbabilitiesFromC
-      clusterExport(z$cl[use], doGetProbabilitiesFromC)
+      clusterExport(z$cl[use], "doGetProbabilitiesFromC", envir=environment())
 
       # Call function using callGrid and get results
-      anss <- snow::parRapply(
-        z$cl[use], callGrid,
-        foo, z$thetaMat, index,
-        getScores
-      )
+      abc = 123
+      clusterExport(z$cl[use], "abc", envir=environment())
+      ans = clusterEvalQ(z$cl[use], print(abc))
+      print(ans)
+      print('Done')
+      stop()
 
 
     #   if (Sys.getenv("DEBUG_PARRAPPLY")=="yes") {
@@ -2706,7 +2707,7 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
     #     doGetProbabilitiesFromC, z$thetaMat, index,
     #     getScores
     #   )
-    # }
+    }
   }
   ans <- list()
   # It was the following - must be wrong
@@ -2730,9 +2731,6 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
   ans
 }
 
-foo <- function(x, thetMat, index, getScores) {
-  doGetProbabilitiesFromC(x, thetmat, index, getScores)
-}
 
 ## @doGetProbabilitiesFromC Maximum likelihood
 doGetProbabilitiesFromC <- function(x, thetaMat, index, getScores) {
