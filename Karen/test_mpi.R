@@ -23,7 +23,7 @@ groupModel.ec = RSienaTest::sienaBayes(GroupsModel,
 # Create testfile name
 N <- max(Rmpi::mpi.comm.size(0) - 1, 1)
 testfile = stringr::str_replace(basename(args$file),"Karen.RData","test.reference")
-testfile = paste(testfile,".mpi",N,sep="")
+testfile = paste("test_references/",testfile,".mpi",N,sep="")
 
 # Compare with testfile
 testthat::expect_known_value(
