@@ -2680,33 +2680,19 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
 
       use <- 1:(min(nrow(callGrid), z$int2))
 
+      thetaMat <- z$thetaMat
+
       # Send doGetProbabilitiesFromC
-      clusterExport(z$cl[use], "doGetProbabilitiesFromC", envir=environment())
+      clusterExport(z$cl[use], "thetaMat", envir=environment())
+      clusterExport(z$cl[use], "index", envir=environment())
+      clusterExport(z$cl[use], "getScores", envir=environment())
+      clusterExport(z$cl[use], "vecfun", envir=environment())
 
-      # Call function using callGrid and get results
-      abc = 123
-      clusterExport(z$cl[use], "abc", envir=environment())
-      ans = clusterEvalQ(z$cl[use], print(abc))
-      print(ans)
-      print('Done')
-      stop()
-
-
-    #   if (Sys.getenv("DEBUG_PARRAPPLY")=="yes") {
-    #     tm = snow.time(
-    #       anss <- snow::parRapply(
-    #         z$cl[use], callGrid,
-    #         doGetProbabilitiesFromC, z$thetaMat, index,
-    #         getScores
-    #       )
-    #     )
-    #     print(tm); plot(tm); stop()
-    #   } else
-    #   anss <- snow::parRapply(
-    #     z$cl[use], callGrid,
-    #     doGetProbabilitiesFromC, z$thetaMat, index,
-    #     getScores
-    #   )
+      anss = clusterEvalQSplit(
+          z$cl[use],
+          vecfun(x, thetaMat, index, getScores),
+          callGrid
+      )
     }
   }
   ans <- list()
@@ -2729,6 +2715,24 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
   }
   ans[[3]] <- sapply(anss, "[[", 3)
   ans
+}
+
+
+fsub <- function(x, expr)
+    do.call('substitute', list(expr, list(x=x)))
+
+vecfun <- function(x, ...) {
+    ans = apply(x, 1, doGetProbabilitiesFromC, ...)
+
+}
+
+clusterEvalQSplit<-function(cl, expr, x) {
+    args <- snow::splitRows(x,length(cl))
+
+    # expr must be a function of x
+    fx <- lapply(args, fsub, expr=substitute(expr))
+
+    snow::docall(c, snow::clusterApply(cl, fx, eval))
 }
 
 
