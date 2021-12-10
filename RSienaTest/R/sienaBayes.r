@@ -280,7 +280,9 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
     zm$BayesAcceptances <<- rep(NA, z$nGroup + 2)
     zsmall <<- getFromNamespace("makeZsmall", pkgname)(z)
 
-    clusterExportPickle(z$cl, list("vecfun"), envir=environment())
+    if (nbrNodes>1) {
+      clusterExportPickle(z$cl, list("vecfun"), envir=environment())
+    }
 
     for (i in 1:nrunMH)
     {
