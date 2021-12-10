@@ -2683,11 +2683,8 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
       thetaMat <- z$thetaMat
 
       # Send doGetProbabilitiesFromC
-      clusterExport(z$cl[use], "thetaMat", envir=environment())
-      clusterExport(z$cl[use], "index", envir=environment())
-      clusterExport(z$cl[use], "getScores", envir=environment())
-      clusterExport(z$cl[use], "vecfun", envir=environment())
-
+      clusterExport(z$cl[use], list("thetaMat","index","getScores","vecfun"), envir=environment())
+      stop()
       anss = clusterEvalQSplit(
           z$cl[use],
           vecfun(x, thetaMat, index, getScores),
