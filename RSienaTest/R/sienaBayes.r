@@ -280,6 +280,8 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
     zm$BayesAcceptances <<- rep(NA, z$nGroup + 2)
     zsmall <<- getFromNamespace("makeZsmall", pkgname)(z)
 
+    clusterExportPickle(z$cl, list("vecfun"), envir=environment())
+
     for (i in 1:nrunMH)
     {
       # This is the hot loop.
@@ -2683,8 +2685,8 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
       thetaMat <- z$thetaMat
 
       # Send doGetProbabilitiesFromC
-      clusterExport(z$cl[use], list("thetaMat","index","getScores","vecfun"), envir=environment())
-      stop()
+      clusterExportPickle(z$cl[use], list("thetaMat","index","getScores"), envir=environment())
+
       anss = clusterEvalQSplit(
           z$cl[use],
           vecfun(x, thetaMat, index, getScores),

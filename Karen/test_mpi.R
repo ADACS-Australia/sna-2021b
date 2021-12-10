@@ -16,7 +16,6 @@ clusterExportPickle <- local({
     function(cl, list, envir = .GlobalEnv) {
         ## do this with only one clusterCall--loop on workers?
         for (name in list) {
-            print(paste("SENDING:",name))
             clusterCallPickle(cl, gets, name, get(name, envir = envir))
         }
     }
@@ -25,64 +24,44 @@ clusterExportPickle <- local({
 clusterCallPickle <- function(cl, fun, ...) {
     checkCluster(cl)
 
-    print("Serializing")
     # serialise here
     value = list(fun = fun, args = list(...), return = TRUE, tag = NULL)
-    data = list(type = "EXEC", data = value, tag = NULL)
-    print("----DATA----")
-    print(data)
-    print("----DATA----")
-    data = serialize(data, NULL)
-    print("Serialized")
+    data_ = list(type = "EXEC", data = value, tag = NULL)
+    data = serialize(data_, NULL)
 
     # then send to all workers
-    for (i in seq(along = cl))
-        print(paste("Sending to",i))
+    for (i in seq(along = cl)) {
         node = cl[[i]]
-        Rmpi::mpi.send(data, type=4, dest=node$rank, tag=node$SENDTAG, comm=node$comm)
-
-    print("Finished sending")
+        Rmpi::mpi.isend(x=data, type=4, dest=node$rank, tag=node$SENDTAG, comm=node$comm)
+    }
 
     # recieve results from workers and return
     checkForRemoteErrors(lapply(cl, recvResult))
-
-    print("Received results")
 }
 
-x = 1
 
-cl <- snow::makeCluster(
-          type = "MPI",
-          outfile = "cluster.out"
-        )
+# Run sienaBayes
+groupModel.ec = RSienaTest::sienaBayes(GroupsModel,
+  data = my.Karen,
+  effects = GroupEffects, priorMu = Mu, priorSigma = Sig,
+  priorKappa = 0.01,
+  prevBayes = groupModel.e,
+  nmain = 3, nrunMHBatches = 40,
+  silentstart = FALSE, clusterType = "MPI"
+)
 
-clusterExportPickle(cl, list("x"), envir=environment())
+# Create testfile name
+N <- max(Rmpi::mpi.comm.size(0) - 1, 1)
+testfile = stringr::str_replace(basename(args$file),"Karen.RData","test.reference")
+testfile = paste("test_references/",testfile,".mpi",N,sep="")
 
-print("FINISHED")
-
-
-# # Run sienaBayes
-# groupModel.ec = RSienaTest::sienaBayes(GroupsModel,
-#   data = my.Karen,
-#   effects = GroupEffects, priorMu = Mu, priorSigma = Sig,
-#   priorKappa = 0.01,
-#   prevBayes = groupModel.e,
-#   nmain = 3, nrunMHBatches = 40,
-#   silentstart = FALSE, clusterType = "MPI"
-# )
-
-# # Create testfile name
-# N <- max(Rmpi::mpi.comm.size(0) - 1, 1)
-# testfile = stringr::str_replace(basename(args$file),"Karen.RData","test.reference")
-# testfile = paste("test_references/",testfile,".mpi",N,sep="")
-
-# # Compare with testfile
-# testthat::expect_known_value(
-#   groupModel.ec$theta,
-#   testfile,
-#   update = FALSE,
-#   info = NULL,
-#   label = NULL,
-#   version = 3,
-#   # tolerance = 1.e-3
-# )
+# Compare with testfile
+testthat::expect_known_value(
+  groupModel.ec$theta,
+  testfile,
+  update = FALSE,
+  info = NULL,
+  label = NULL,
+  version = 3,
+  # tolerance = 1.e-3
+)
