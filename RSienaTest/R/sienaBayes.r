@@ -31,17 +31,8 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
                        storeAll = FALSE, prevAns = NULL, usePrevOnly = TRUE,
                        prevBayes = NULL, newProposalFromPrev = (prevBayes$nwarm >= 1),
                        silentstart = TRUE,
-                       nbrNodes = 1, clusterType = c("PSOCK", "SOCK", "FORK", "MPI"),
+                       nbrNodes = 1, clusterType = c("PSOCK", "FORK"),
                        getDocumentation = FALSE) {
-
-  if (clusterType == "MPI") {
-    nbrNodes <- max(Rmpi::mpi.comm.size(0) - 1, 1)
-  } else if (is.null(nbrNodes)) {
-    nbrNodes <- 1
-  }
-
-  useCluster <- nbrNodes > 1
-
   ## @createStores internal sienaBayes Bayesian set up stores
   createStores <- function() {
     # npar <- length(z$theta)
@@ -877,7 +868,7 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
       delta = delta, nmain = nmain, nprewarm = nprewarm, nwarm = nwarm,
       lengthPhase1 = lengthPhase1, lengthPhase3 = lengthPhase3,
       prevAns = prevAns, usePrevOnly = usePrevOnly,
-      silentstart = silentstart, useCluster = useCluster, clusterType = clusterType
+      silentstart = silentstart, clusterType = clusterType
     )
     cat("Initial global model estimates\n")
     print(z$initialResults)
@@ -1162,29 +1153,21 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
     z$thetaMat <- prevThetaMat
 
     if (nbrNodes > 1 && z$observations > 1) {
+      ## require(parallel)
+      clusterType <- match.arg(clusterType)
       if (clusterType == "PSOCK") {
         clusterString <- rep("localhost", nbrNodes)
-        z$cl <- makeCluster(
-          clusterString,
+        z$cl <- makeCluster(clusterString,
           type = "PSOCK",
           outfile = "cluster.out"
         )
-      } else if (clusterType == "MPI") {
-        z$cl <- snow::makeCluster(
-          type = clusterType,
-          outfile = "cluster.out"
-        )
       } else {
-        z$cl <- snow::makeCluster(nbrNodes,
-          type = clusterType,
+        z$cl <- makeCluster(nbrNodes,
+          type = "FORK",
           outfile = "cluster.out"
         )
       }
-      # tm = snow.time(
-        clusterCall(z$cl, library, pkgname, character.only = TRUE)
-      # )
-      # print(tm)
-      # plot(tm)
+      clusterCall(z$cl, library, pkgname, character.only = TRUE)
       clusterCall(z$cl, storeinFRANstore, FRANstore())
       clusterCall(z$cl, FRANstore)
       clusterCall(z$cl, initializeFRAN, z, algo,
@@ -1193,7 +1176,6 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
       clusterSetRNGStream(z$cl, iseed = as.integer(runif(1,
         max = .Machine$integer.max
       )))
-
     }
 
     # Note: all parameter values are taken from prevBayes,
@@ -1492,7 +1474,7 @@ initializeBayes <- function(data, effects, algo, nbrNodes,
                             nmain, nprewarm, nwarm,
                             lengthPhase1, lengthPhase3,
                             prevAns, usePrevOnly,
-                            silentstart, useCluster, clusterType = c("PSOCK", "SOCK", "FORK", "MPI")) {
+                            silentstart, clusterType = c("PSOCK", "FORK")) {
   ## @precision internal initializeBayes invert z$covtheta
   ## avoiding some inversion problems
   ## for MoM estimates only
@@ -1748,7 +1730,7 @@ initializeBayes <- function(data, effects, algo, nbrNodes,
     startupGlobal <- siena07(startupModel,
       data = data, effects = effects,
       batch = TRUE, silent = silentstart,
-      useCluster = useCluster, nbrNodes = nbrNodes,
+      useCluster = (nbrNodes >= 2), nbrNodes = nbrNodes,
       clusterType = clusterType
     )
   } else {
@@ -1763,7 +1745,7 @@ initializeBayes <- function(data, effects, algo, nbrNodes,
       startupGlobal <- siena07(startupModel,
         data = data, effects = effects,
         batch = TRUE, silent = silentstart,
-        useCluster = useCluster, nbrNodes = nbrNodes,
+        useCluster = (nbrNodes >= 2), nbrNodes = nbrNodes,
         clusterType = clusterType, prevAns = prevAns
       )
     }
@@ -2429,14 +2411,9 @@ initializeBayes <- function(data, effects, algo, nbrNodes,
         type = "PSOCK",
         outfile = "cluster.out"
       )
-    } else if (clusterType == "MPI") {
-      z$cl <- snow::makeCluster(
-        type = clusterType,
-        outfile = "cluster.out"
-      )
     } else {
-      z$cl <- snow::makeCluster(nbrNodes,
-        type = clusterType,
+      z$cl <- makeCluster(nbrNodes,
+        type = "FORK",
         outfile = "cluster.out"
       )
     }
@@ -2671,26 +2648,13 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
     anss <- list(ans)
   } else {
     if (z$int2 == 1) {
-
       anss <- apply(
         callGrid, 1,
         doGetProbabilitiesFromC, z$thetaMat, index, getScores
       )
     } else {
-
       use <- 1:(min(nrow(callGrid), z$int2))
-
-      if (Sys.getenv("DEBUG_PARRAPPLY")=="yes") {
-        tm = snow.time(
-          anss <- snow::parRapply(
-            z$cl[use], callGrid,
-            doGetProbabilitiesFromC, z$thetaMat, index,
-            getScores
-          )
-        )
-        print(tm); plot(tm); stop()
-      } else
-      anss <- snow::parRapply(
+      anss <- parRapply(
         z$cl[use], callGrid,
         doGetProbabilitiesFromC, z$thetaMat, index,
         getScores
