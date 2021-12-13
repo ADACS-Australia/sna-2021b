@@ -2679,7 +2679,7 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
     } else {
       use <- 1:(min(nrow(callGrid), z$int2))
       # Send doGetProbabilitiesFromC
-      if (useCluster && clusterType == "MPI") {
+      if (Rmpi::mpi.comm.size(0) > 1) {
         thetaMat <- z$thetaMat
         clusterExport.mpi.fast(
           z$cl[use], 
