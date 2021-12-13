@@ -3,7 +3,7 @@ substituteX <- function(x, expr) {
   do.call('substitute', list(expr, list(x=x)))
 }
 
-ClusterEvalQ.SplitByRow <- function(cl, expr, xgrid) {
+clusterEvalQ.SplitByRow <- function(cl, expr, xgrid) {
   # Split the xgrid array into subsets/batches
   xbatches <- splitRows(xgrid,length(cl))
 
