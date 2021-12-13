@@ -9,7 +9,7 @@ clusterEvalQ.SplitByRow <- function(cl, expr, xgrid) {
 
   # Create sets of expressions, replacing 'x' in each expression
   # with the correct subset of the xgrid array
-  exprs <- lapply(xbatches, substituteX, expr=expr)
+  exprs <- lapply(xbatches, substituteX, expr=substitute(expr))
 
   # Evaluate the sets of expressions on each worker
   docall(c, clusterApply(cl, exprs, eval))
