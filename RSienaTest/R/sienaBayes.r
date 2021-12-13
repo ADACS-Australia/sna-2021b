@@ -283,6 +283,7 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
     zsmall <<- getFromNamespace("makeZsmall", pkgname)(z)
 
     if (useCluster && clusterType == "MPI") {
+      # Make function "rowApply.DoGetProbabilitiesFromC" available on the workers
       clusterExport.mpi.fast(z$cl, list("rowApply.DoGetProbabilitiesFromC"), envir=environment())
     }
 
@@ -1170,8 +1171,7 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
     if (nbrNodes > 1 && z$observations > 1) {
       if (clusterType == "PSOCK") {
         clusterString <- rep("localhost", nbrNodes)
-        z$cl <- makeCluster(
-          clusterString,
+        z$cl <- makeCluster(clusterString,
           type = "PSOCK",
           outfile = "cluster.out"
         )
@@ -1195,7 +1195,6 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
       clusterSetRNGStream(z$cl, iseed = as.integer(runif(1,
         max = .Machine$integer.max
       )))
-
     }
 
     # Note: all parameter values are taken from prevBayes,
@@ -2673,14 +2672,15 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
     anss <- list(ans)
   } else {
     if (z$int2 == 1) {
-
       anss <- apply(
         callGrid, 1,
         doGetProbabilitiesFromC, z$thetaMat, index, getScores
       )
     } else {
       use <- 1:(min(nrow(callGrid), z$int2))
-      # Send doGetProbabilitiesFromC
+      
+      # If running with MPI, pickle the arguments once and then send them
+      # prior to calling the funciton
       if (Rmpi::mpi.comm.size(0) > 1) {
         thetaMat <- z$thetaMat
         clusterExport.mpi.fast(
@@ -2694,6 +2694,8 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
           callGrid
         )
       } else {
+        # parRapply is inefficient because it pickles the function and argument
+        # every time it is called, once for each worker
         anss <- parRapply(
           z$cl[use], callGrid,
           doGetProbabilitiesFromC,
