@@ -2682,9 +2682,9 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
       )
     } else {
       use <- 1:(min(nrow(callGrid), z$int2))
-      thetaMat <- z$thetaMat
       # Send doGetProbabilitiesFromC
       if (useCluster && clusterType == "MPI") {
+        thetaMat <- z$thetaMat
         clusterExportPickle(z$cl[use], list("thetaMat", "index", "getScores"), envir = environment())
         anss <- clusterEvalQSplit(z$cl[use], vecfun(x, thetaMat, index, getScores), callGrid)
       } else {
