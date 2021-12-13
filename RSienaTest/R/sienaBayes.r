@@ -281,7 +281,7 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
     zsmall <<- getFromNamespace("makeZsmall", pkgname)(z)
 
     if (useCluster && clusterType == "MPI") {
-      clusterExportPickle(z$cl, list("vecfun"), envir=environment())
+      clusterExportPickle(z$cl, list("rowApply.DoGetProbabilitiesFromC"), envir=environment())
     }
 
     for (i in 1:nrunMH)
@@ -2681,8 +2681,16 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
       # Send doGetProbabilitiesFromC
       if (useCluster && clusterType == "MPI") {
         thetaMat <- z$thetaMat
-        clusterExportPickle(z$cl[use], list("thetaMat", "index", "getScores"), envir = environment())
-        anss <- clusterEvalQSplit(z$cl[use], vecfun(x, thetaMat, index, getScores), callGrid)
+        clusterExportPickle(
+          z$cl[use], 
+          list("thetaMat", "index", "getScores"), 
+          envir = environment()
+        )
+        anss <- clusterEvalQ.SplitByRow(
+          z$cl[use],
+          rowApply.DoGetProbabilitiesFromC(x, thetaMat, index, getScores),
+          callGrid
+        )
       } else {
         anss <- snow::parRapply(
           z$cl[use], callGrid,
@@ -2714,24 +2722,27 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
   ans
 }
 
-
-fsub <- function(x, expr)
-    do.call('substitute', list(expr, list(x=x)))
-
-vecfun <- function(x, ...) {
-    ans = apply(x, 1, doGetProbabilitiesFromC, ...)
-
+# Function to substitute all occurunces of the variable 'x' in an expression
+substituteX <- function(x, expr) {
+  do.call('substitute', list(expr, list(x=x)))
 }
 
-clusterEvalQSplit<-function(cl, expr, x) {
-    args <- snow::splitRows(x,length(cl))
+ClusterEvalQ.SplitByRow <- function(cl, expr, xgrid) {
+  # Split the xgrid array into subsets/batches
+  xbatches <- splitRows(xgrid,length(cl))
 
-    # expr must be a function of x
-    fx <- lapply(args, fsub, expr=substitute(expr))
+  # Create sets of expressions, replacing 'x' in each expression
+  # with the correct subset of the xgrid array
+  exprs <- lapply(xbatches, substituteX, expr=expr)
 
-    snow::docall(c, snow::clusterApply(cl, fx, eval))
+  # Evaluate the sets of expressions on each worker
+  docall(c, clusterApply(cl, exprs, eval))
 }
 
+# Vectorised doGetProbabilitiesFromC(), taking a list of arguments
+rowApply.DoGetProbabilitiesFromC <- function(x, ...) {
+  ans <- apply(x, 1, doGetProbabilitiesFromC, ...)
+}
 
 ## @doGetProbabilitiesFromC Maximum likelihood
 doGetProbabilitiesFromC <- function(x, thetaMat, index, getScores) {
