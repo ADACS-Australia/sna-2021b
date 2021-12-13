@@ -1184,11 +1184,7 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
           outfile = "cluster.out"
         )
       }
-      # tm = snow.time(
-        clusterCall(z$cl, library, pkgname, character.only = TRUE)
-      # )
-      # print(tm)
-      # plot(tm)
+      clusterCall(z$cl, library, pkgname, character.only = TRUE)
       clusterCall(z$cl, storeinFRANstore, FRANstore())
       clusterCall(z$cl, FRANstore)
       clusterCall(z$cl, initializeFRAN, z, algo,
