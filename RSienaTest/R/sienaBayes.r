@@ -34,6 +34,8 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
                        nbrNodes = 1, clusterType = c("PSOCK", "SOCK", "FORK", "MPI"),
                        getDocumentation = FALSE) {
 
+  clusterType <- match.arg(clusterType)
+
   if (clusterType == "MPI") {
     nbrNodes <- max(Rmpi::mpi.comm.size(0) - 1, 1)
   } else if (is.null(nbrNodes)) {
