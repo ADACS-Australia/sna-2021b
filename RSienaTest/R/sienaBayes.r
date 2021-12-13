@@ -1174,12 +1174,12 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
           outfile = "cluster.out"
         )
       } else if (clusterType == "MPI") {
-        z$cl <- snow::makeCluster(
+        z$cl <- makeCluster(
           type = clusterType,
           outfile = "cluster.out"
         )
       } else {
-        z$cl <- snow::makeCluster(nbrNodes,
+        z$cl <- makeCluster(nbrNodes,
           type = clusterType,
           outfile = "cluster.out"
         )
@@ -2430,12 +2430,12 @@ initializeBayes <- function(data, effects, algo, nbrNodes,
         outfile = "cluster.out"
       )
     } else if (clusterType == "MPI") {
-      z$cl <- snow::makeCluster(
+      z$cl <- makeCluster(
         type = clusterType,
         outfile = "cluster.out"
       )
     } else {
-      z$cl <- snow::makeCluster(nbrNodes,
+      z$cl <- makeCluster(nbrNodes,
         type = clusterType,
         outfile = "cluster.out"
       )
@@ -2692,7 +2692,7 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
           callGrid
         )
       } else {
-        anss <- snow::parRapply(
+        anss <- parRapply(
           z$cl[use], callGrid,
           doGetProbabilitiesFromC,
           z$thetaMat, index, getScores
