@@ -280,7 +280,7 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
     zm$BayesAcceptances <<- rep(NA, z$nGroup + 2)
     zsmall <<- getFromNamespace("makeZsmall", pkgname)(z)
 
-    if (nbrNodes>1) {
+    if (useCluster && clusterType == "MPI") {
       clusterExportPickle(z$cl, list("vecfun"), envir=environment())
     }
 
@@ -2681,19 +2681,19 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
         doGetProbabilitiesFromC, z$thetaMat, index, getScores
       )
     } else {
-
       use <- 1:(min(nrow(callGrid), z$int2))
-
       thetaMat <- z$thetaMat
-
       # Send doGetProbabilitiesFromC
-      clusterExportPickle(z$cl[use], list("thetaMat","index","getScores"), envir=environment())
-
-      anss = clusterEvalQSplit(
-          z$cl[use],
-          vecfun(x, thetaMat, index, getScores),
-          callGrid
-      )
+      if (useCluster && clusterType == "MPI") {
+        clusterExportPickle(z$cl[use], list("thetaMat", "index", "getScores"), envir = environment())
+        anss <- clusterEvalQSplit(z$cl[use], vecfun(x, thetaMat, index, getScores), callGrid)
+      } else {
+        anss <- snow::parRapply(
+          z$cl[use], callGrid,
+          doGetProbabilitiesFromC,
+          z$thetaMat, index, getScores
+        )
+      }
     }
   }
   ans <- list()
