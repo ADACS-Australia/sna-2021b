@@ -10,26 +10,26 @@ load(args$file)
 # e.g.
 # insertSource("../snow_mod.r")
 
-clusterExportPickle <- local({
+clusterExport.mpi.fast <- local({
     env <- as.environment(1) ## .GlobalEnv
     gets <- function(n, v) { assign(n, v, envir = env); NULL }
     function(cl, list, envir = .GlobalEnv) {
         ## do this with only one clusterCall--loop on workers?
         for (name in list) {
-            clusterCallPickle(cl, gets, name, get(name, envir = envir))
+            clusterCall.mpi.fast(cl, gets, name, get(name, envir = envir))
         }
     }
 })
 
-clusterCallPickle <- function(cl, fun, ...) {
+clusterCall.mpi.fast <- function(cl, fun, ...) {
     checkCluster(cl)
 
-    # serialise here
+    # create packet and serialise
     value = list(fun = fun, args = list(...), return = TRUE, tag = NULL)
     data_ = list(type = "EXEC", data = value, tag = NULL)
     data = serialize(data_, NULL)
 
-    # then send to all workers
+    # send packet to all workers
     for (i in seq(along = cl)) {
         node = cl[[i]]
         Rmpi::mpi.isend(x=data, type=4, dest=node$rank, tag=node$SENDTAG, comm=node$comm)

@@ -281,7 +281,7 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
     zsmall <<- getFromNamespace("makeZsmall", pkgname)(z)
 
     if (useCluster && clusterType == "MPI") {
-      clusterExportPickle(z$cl, list("rowApply.DoGetProbabilitiesFromC"), envir=environment())
+      clusterExport.mpi.fast(z$cl, list("rowApply.DoGetProbabilitiesFromC"), envir=environment())
     }
 
     for (i in 1:nrunMH)
@@ -2681,7 +2681,7 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
       # Send doGetProbabilitiesFromC
       if (useCluster && clusterType == "MPI") {
         thetaMat <- z$thetaMat
-        clusterExportPickle(
+        clusterExport.mpi.fast(
           z$cl[use], 
           list("thetaMat", "index", "getScores"), 
           envir = environment()
