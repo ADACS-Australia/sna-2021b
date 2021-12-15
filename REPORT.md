@@ -46,9 +46,13 @@ The send and receive methods in `Rmpi` consist of three main steps:
 2. The R garbage collector, invoked using `gc()`
 3. The `MPI_SEND` and `MPI_RECV` calls
 
-For the same problem, the timing breakdown was
+Table 2: Timing breakdown during send MPI operation when using MPI
 
-*Table of timings*
+|                    | Time (s)   | Fraction (%) |
+|--------------------|------------|--------------|
+| Serialisation      | 5.15e-4    | 0.54         |
+| MPI send operation | 7.08e-5    | 0.080        |
+| Garbage collection | 9.45e-2    | 99.38        |
 
 Several causes of poor performance have been identified, and solutions proposed:
 
