@@ -37,7 +37,7 @@ Table 1: Timing comparison of communication methods
 
 It is much more complicated to gather detailed timing with `FORK` compared to `SOCK`, and since `FORK` and `SOCK` run with similar wall times, we use `SOCK` for the following comparison.
 
-Figure 1. Gantt Chart of SOCK communication with 4 slave tasks
+Figure 1. Gantt Chart of socket communication with 4 slave tasks
 ![Figure 1: SOCK](plots/ozstar-sock-4.png)
 
 Figure 2. Gantt chart of MPI communication with 4 slave tasks
@@ -87,7 +87,14 @@ Replacing the `MPI_Send` call with the non-blocking equivalent `MPI_Isend` call 
 The `MPI_Isend` function in `Rmpi` does not include a garbage collection call, so swapping to the non-blocking send also resolves the garbage collection issue.
 
 ## Results
-After applying optimisations, the test problem ran in 23 seconds, down from 840s - a 36x speedup.
+After applying optimisations, the test (`n=10, m=4`) problem ran in 23 seconds, down from 840s - a 36x speedup. This improvement is particularly pronounced because the time spent in communication is comparable to the time spent in computation. The performance improvement for larger problems is expected to be smaller because the time required to calculate the likelihood with respect to problem size will increase faster than communication time.
+
+Table 3: Scaling for a small problem (`n=40, m=4`)
+| Number of workers | Time (s) | Speedup |
+|-------------------|----------|---------|
+| 1                 | 455      | 1x      |
+| 2                 | 371      | 1.23x   |
+| 4                 | 146      | 3.11x   |
 
 ## Project delivery
 
@@ -101,8 +108,11 @@ Although the optimisations delivered in this project have already improved perfo
 
 The `clusterEvalQ.SplitByRow` in its current implementation relies on `clusterApply`, which still serialises the function along with its arguments. In this case, the function `eval` is serialised, even though it already exists in the slave task's environment. This is necessary because the `workerLoop` function expects to receive a function with arguments. By modifying the `workerLoop` to accept a standalone expression, this overhead can be eliminated.
 
-The `sendData` calls serially send work to each slave task. Although this is improved by using nonblocking MPI sends, the limitation will become a bottleneck for large numbers of tasks. This can be improved by using an MPI
+The `sendData` calls serially send work to each slave task. Although this is improved by using nonblocking MPI sends, the limitation will become a bottleneck for large numbers of tasks. This can be improved by using an `MPI_Bcast`, which takes advantage of the fact that all tasks need ot be sent simultaneously at the beginning of each iteration.
 
+The `sendData` call to return work from each slave only communicates a number (the likelihood), but it is still serialised as an R object. A specific function for communicating this value using a native MPI datatype will further reduce serialisation overheads.
+
+These improvements require significant rewriting of the `snow` library, changing it from a general purpose library into a tuned (but specific) set of communication functions for `RSienaTest`. Specialisation of the communication functinos will ultimately be necessary to achieve optimal performance, and should be discussed with the `RSienaTest` developers to determine if these changes are aligned with the aims of the code.
 
 ## Appendix: Running with MPI
 Although the `snow` library provides methods to spawn MPI tasks dynamically, this is not supported on all HPC systems.
@@ -127,3 +137,8 @@ mpirun -n 4 mpi-Rscript call.Karen.R
 ```
 
 `sienaBayes` has been modified to detect the number of MPI tasks `N` at run time (if MPI is being used), and set `nbrNodes <- N-1`. This overrides the `nbrNodes` argument passed through to `sienaBayes`.
+
+On HPC systems running the Slurm scheduler (e.g. OzSTAR), Slurm will automatically determine the number of MPI tasks to launch based on the job resource request, so it is not necessary to specify the number of tasks:
+```
+srun mpi-Rscript call.Karen.R
+```
