@@ -24,9 +24,12 @@ The MPI implementation in `snow` is built on the `Rmpi` library, an R wrapper fo
 ## Profiling and optimisation strategy
 Given that the code already has an option for running with MPI, the most straightforward solution is to set the communication method of `snow` to `MPI`.
 
-A small test problem with `n=10` and `M=4` showed that `MPI` performed significantly worse than `FORK`
+A small test problem with `n=10` and `M=4` showed that `MPI` performed significantly worse than `SOCK`. Note: It is much more complicated to gather detailed timing with `FORK` compared to `SOCK`, and since `FORK` and `SOCK` run with similar wall times, we use `SOCK` as a comparison instead.
 
-*Plot comparing n=10 M=4 MPI vs FORK*
+* [Figure 1: SOCK](plots/ozstar-sock-4.pdf)
+* [Figure 2: MPI](plots/ozstar-mpi-4.pdf)
+
+Figures (1) and (2) are Gantt charts showing the timing breakdown for one iteration. The red lines indicate time spent performing send and receive operations, the green bars indicate time spent performing computations, and the blue lines indicate time spent waiting for a send operation to begin. An MPI iteration takes over 50 times longer to complete, due to massive communication overheads. Because the communication operations must run in serial, the entire code is forced to run in serial.
 
 The send and receive methods in `Rmpi` consist of three main steps:
 
