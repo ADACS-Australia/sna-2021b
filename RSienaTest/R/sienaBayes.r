@@ -282,11 +282,6 @@ sienaBayes <- function(data, effects, algo, saveFreq = 100,
     zm$BayesAcceptances <<- rep(NA, z$nGroup + 2)
     zsmall <<- getFromNamespace("makeZsmall", pkgname)(z)
 
-    if (useCluster && clusterType == "MPI") {
-      # Make function "rowApply.DoGetProbabilitiesFromC" available on the workers
-      clusterExport.mpi.fast(z$cl, list("rowApply.DoGetProbabilitiesFromC"), envir=environment())
-    }
-
     for (i in 1:nrunMH)
     {
       # This is the hot loop.
@@ -2678,30 +2673,11 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
       )
     } else {
       use <- 1:(min(nrow(callGrid), z$int2))
-      
-      # If running with MPI, pickle the arguments once and then send them
-      # prior to calling the funciton
-      if (Rmpi::mpi.comm.size(0) > 1) {
-        thetaMat <- z$thetaMat
-        clusterExport.mpi.fast(
-          z$cl[use], 
-          list("thetaMat", "index", "getScores"), 
-          envir = environment()
-        )
-        anss <- clusterEvalQ.SplitByRow(
-          z$cl[use],
-          rowApply.DoGetProbabilitiesFromC(x, thetaMat, index, getScores),
-          callGrid
-        )
-      } else {
-        # parRapply is inefficient because it pickles the function and argument
-        # every time it is called, once for each worker
-        anss <- parRapply(
-          z$cl[use], callGrid,
-          doGetProbabilitiesFromC,
-          z$thetaMat, index, getScores
-        )
-      }
+      anss <- parRapply(
+        z$cl[use], callGrid,
+        doGetProbabilitiesFromC, z$thetaMat, index,
+        getScores
+      )
     }
   }
   ans <- list()
@@ -2724,11 +2700,6 @@ getProbabilitiesFromC <- function(z, index = 1, getScores = FALSE) {
   }
   ans[[3]] <- sapply(anss, "[[", 3)
   ans
-}
-
-# Vectorised doGetProbabilitiesFromC(), taking a list of arguments
-rowApply.DoGetProbabilitiesFromC <- function(x, ...) {
-  ans <- apply(x, 1, doGetProbabilitiesFromC, ...)
 }
 
 ## @doGetProbabilitiesFromC Maximum likelihood
