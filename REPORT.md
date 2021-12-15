@@ -1,5 +1,7 @@
 # RSienaTest MPI Optimisation Report
 
+**ADACS Project SNA_2021B**
+
 ## Test problem
 The `Karen` test problem was used to benchmark the `RSienaTest` package. The `setup.Karen.R` routine allows for the network size (`n`) and number of networks (`M`) to be adjusted. This routine runs a specified number of pre-warming, warming, and main steps, producing a checkpoint file which can then be called on to run individual "timesteps" that can be profiled.
 
@@ -35,8 +37,11 @@ Table 1: Timing comparison of communication methods
 
 It is much more complicated to gather detailed timing with `FORK` compared to `SOCK`, and since `FORK` and `SOCK` run with similar wall times, we use `SOCK` for the following comparison.
 
-* [Figure 1: SOCK](plots/ozstar-sock-4.pdf)
-* [Figure 2: MPI](plots/ozstar-mpi-4.pdf)
+Figure 1. Gantt Chart of SOCK communication with 4 slave tasks
+![Figure 1: SOCK](plots/ozstar-sock-4.png){width=250}
+
+Figure 2. Gantt chart of MPI communication with 4 slave tasks
+![Figure 2: MPI](plots/ozstar-mpi-4.png)
 
 Figures (1) and (2) are Gantt charts showing the timing breakdown for one iteration. The red lines indicate time spent performing send and receive operations, the green bars indicate time spent performing computations, and the blue lines indicate time spent waiting for a send operation to begin. An MPI iteration takes over 50 times longer to complete, due to massive communication overheads. Because the communication operations must run in serial, the entire code is forced to run in serial.
 
