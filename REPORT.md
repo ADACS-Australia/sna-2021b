@@ -24,16 +24,16 @@ The MPI implementation in `snow` is built on the `Rmpi` library, an R wrapper fo
 ## Profiling and optimisation strategy
 Given that the code already has an option for running with MPI, the most straightforward solution is to set the communication method of `snow` to `MPI`.
 
-A small test problem with `n=10` and `M=4` showed that `MPI` performed significantly worse than `SOCK`.
+A small test problem with `n=10` and `M=4`, run for 3 iterations showed that `MPI` performed significantly worse than `SOCK`.
 
 Table 1: Timing comparison of communication methods
-|      | Run time (s) |
-|------|--------------|
-| FORK | 191          |
-| SOCK | 191          |
-| MPI  | 840          |
+| Method     | Run time (s) |
+|------------|--------------|
+| FORK       | 191          |
+| SOCK       | 191          |
+| MPI        | 840          |
 
-It is much more complicated to gather detailed timing with `FORK` compared to `SOCK`, and since `FORK` and `SOCK` run with similar wall times, we use `SOCK` as a comparison instead.
+It is much more complicated to gather detailed timing with `FORK` compared to `SOCK`, and since `FORK` and `SOCK` run with similar wall times, we use `SOCK` for the following comparison.
 
 * [Figure 1: SOCK](plots/ozstar-sock-4.pdf)
 * [Figure 2: MPI](plots/ozstar-mpi-4.pdf)
@@ -81,8 +81,12 @@ Replacing the `MPI_SEND` call with the non-blocking equivalent `MPI_ISEND` call 
 
 The `MPI_ISEND` function in `Rmpi` does not include a garbage collection call, so swapping to the non-blocking send also resolves the garbage collection issue.
 
+## Results
+After applying optimisations, the test problem ran in 23 seconds, down from 840s - a 36x speedup.
+
 ## Project delivery
-The optimisations have been made available on the public github repository https://github.com/ADACS-Australia/RSienaTest. Changes are made relative to version 1.2-30 (July 13, 2021), reflected on the `master` branch. The improvements made by ADACS are available on the `mpi` branch, and are available as the `1.2-30-mpi` release.
+
+The optimisations have been made available on the public github repository https://github.com/ADACS-Australia/RSienaTest. Changes are made relative to version 1.2-30 (July 13, 2021).
 
 All new functions are contained within `fastCluster.r`, with small changes to `sienaBayes.r` to point to these new functions.
 
