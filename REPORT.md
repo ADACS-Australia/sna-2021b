@@ -24,7 +24,16 @@ The MPI implementation in `snow` is built on the `Rmpi` library, an R wrapper fo
 ## Profiling and optimisation strategy
 Given that the code already has an option for running with MPI, the most straightforward solution is to set the communication method of `snow` to `MPI`.
 
-A small test problem with `n=10` and `M=4` showed that `MPI` performed significantly worse than `SOCK`. Note: It is much more complicated to gather detailed timing with `FORK` compared to `SOCK`, and since `FORK` and `SOCK` run with similar wall times, we use `SOCK` as a comparison instead.
+A small test problem with `n=10` and `M=4` showed that `MPI` performed significantly worse than `SOCK`.
+
+Table 1: Timing comparison of communication methods
+|      | Run time (s) |
+|------|--------------|
+| FORK | 191          |
+| SOCK | 191          |
+| MPI  | 840          |
+
+It is much more complicated to gather detailed timing with `FORK` compared to `SOCK`, and since `FORK` and `SOCK` run with similar wall times, we use `SOCK` as a comparison instead.
 
 * [Figure 1: SOCK](plots/ozstar-sock-4.pdf)
 * [Figure 2: MPI](plots/ozstar-mpi-4.pdf)
