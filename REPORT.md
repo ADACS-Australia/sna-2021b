@@ -100,7 +100,9 @@ Table 3: Scaling for a small problem (`n=40, m=4`)
 
 The optimisations have been made available on the public github repository https://github.com/ADACS-Australia/RSienaTest. Changes are made relative to version 1.2-30 (July 13, 2021).
 
-All new functions are contained within `fastCluster.r`, with small changes to `sienaBayes.r` to point to these new functions.
+New functions are contained within `fastCluster.r`, with small changes to `sienaBayes.r` to point to these new functions.
+
+The change to use `MPI_Isend` is made in the `mpi-Rscript` wrapper because the modification to the library needs to be made on every MPI task, not just the master. Prior to launching the script, an `insertSource` call changes the `sendData.MPInode` function.
 
 ## Proposed optimisations
 
