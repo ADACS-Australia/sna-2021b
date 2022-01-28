@@ -96,13 +96,27 @@ Table 3: Scaling for a small problem (`n=40, m=4`)
 | 2                 | 371      | 1.23x   |
 | 4                 | 146      | 3.11x   |
 
-## Project delivery
+Table 4: Scaling for a medium problem (`n=100, m=16`)
+| Number of workers | Time (s) | Speedup |
+|-------------------|----------|---------|
+| 1                 | 23754    | 1x      |
+| 2                 | 10457    | 2.27x   |
+| 4                 | 6192     | 3.84x   |
+| 8                 | 4264     | 5.57x   |
+| 16                | 2106     | 11.28x  |
+
+Figure 3. Strong scaling measurement for a medium problem (`n=100, m=16`)
+![](plots/scaling/scaling_medium.png)
+
+## Code delivery
 
 The optimisations have been made available on the public github repository https://github.com/ADACS-Australia/RSienaTest. Changes are made relative to version 1.2-30 (July 13, 2021).
 
 New functions are contained within `fastCluster.r`, with small changes to `sienaBayes.r` to point to these new functions.
 
 The change to use `MPI_Isend` is made in the `mpi-Rscript` wrapper because the modification to the library needs to be made on every MPI task, not just the master. Prior to launching the script, an `insertSource` call changes the `sendData.MPInode` function.
+
+[20/12/2021] Note: Testing with 32+ cores on OzSTAR has identified an MPI-level bug caused by the `MPI_Isend` call. `mpi-Rscript` has temporarily been reverted to using the garbage collection optimisation only, until this issue has been resolved.
 
 ## Proposed optimisations
 
